@@ -1,0 +1,26 @@
+{
+  "name": "ocp_sync_source_reference_app_app",
+  "version": "1.0.0-dev.1",
+  "main": "dist/index.js",
+  "license": "UNLICENSED",
+  "scripts": {
+    "build": "rimraf remove dist && tsc && cpy app.yml dist && cpy --up 1 \"src/**/*.{yml,yaml}\" dist",
+    "validate": "rimraf remove dist && tsc && cpy app.yml dist && cpy --up 1 \"src/**/*.{yml,yaml}\" dist && npx eslint src --ext ts && vitest run --passWithNoTests && cross-env LOG_LEVEL=NEVER ocp-app-sdk validate",
+    "lint": "npx eslint src --ext ts",
+    "test": "vitest run --passWithNoTests"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.17",
+    "@zaiusinc/eslint-config-presets": "^3.1.0",
+    "cpy-cli": "^6.0.0",
+    "cross-env": "^7.0.3",
+    "dotenv": "^16.5.0",
+    "rimraf": "^6.0.1",
+    "typescript": "^5.8.3",
+    "vitest": "^4.0.8"
+  },
+  "dependencies": {
+    "@zaiusinc/app-sdk": "3.3.4",
+    "@zaiusinc/node-sdk": "3.0.0"
+  }
+}

@@ -1,0 +1,18 @@
+.idea/
+.vscode/
+node_modules/
+dist/
+yarn-error.log
+.env
+.env.*
+!.env.test
+coverage/
+.DS_Store
+.history
+*.iml
+
+# Yarn Plug'n'Play files
+.yarn
+.yarnrc.yml
+.pnp.cjs
+.pnp.loader.mjs

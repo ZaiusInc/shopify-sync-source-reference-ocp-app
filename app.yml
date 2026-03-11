@@ -1,0 +1,14 @@
+meta:
+  app_id: ocp_sync_source_reference_app
+  display_name: Shopify Source Sync Reference App
+  version: 1.0.0-dev.1
+  vendor: optimizely
+  summary: Shopify Source Sync Reference App
+  support_url: https://support.optimizely.com
+  contact_email: support@optimizely.com
+  categories:
+    - Commerce Platform
+  availability:
+    - all
+
+runtime: node22
