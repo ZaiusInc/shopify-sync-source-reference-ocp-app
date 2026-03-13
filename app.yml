@@ -18,6 +18,11 @@ sources:
     description: Shopify Product
     schema: shopify_products
 
+functions:
+  product_webhook:
+    entry_point: ProductWebhook
+    description: Receives Shopify product webhooks for real-time sync
+
 jobs:
   import_products:
     entry_point: ImportProducts
