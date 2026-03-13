@@ -520,7 +520,8 @@ export class ShopifyClient {
       const topics = [
         'products/create',
         'products/update',
-        'products/delete'
+        'products/delete',
+        'collections/update'
       ];
 
       // Create all webhooks and collect their IDs
