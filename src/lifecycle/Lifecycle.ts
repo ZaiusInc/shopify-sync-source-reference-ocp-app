@@ -1,6 +1,7 @@
 import {
   Lifecycle as AppLifecycle,
   AuthorizationGrantResult,
+  functions,
   jobs,
   LifecycleResult,
   LifecycleSettingsResult,
@@ -9,6 +10,7 @@ import {
   storage, SubmittedFormData
 } from '@zaiusinc/app-sdk';
 import { ShopifyClient } from '../lib/ShopifyClient';
+import { ShopifyWebhookManager } from '../lib/ShopifyWebhookManager';
 
 export class Lifecycle extends AppLifecycle {
   public async onInstall(): Promise<LifecycleResult> {
@@ -78,7 +80,36 @@ export class Lifecycle extends AppLifecycle {
 
     // Credentials are valid — save them
     await storage.settings.put('shopify_credentials', formData);
-    return result.addToast('success', 'Shopify credentials saved and verified successfully.');
+
+    // Set up webhooks for real-time product sync
+    try {
+      const endpoints = await functions.getEndpoints();
+      const webhookUrl = endpoints['product_webhook'];
+
+      const webhookManager = new ShopifyWebhookManager({storeUrl, accessToken});
+      try {
+        await webhookManager.deleteWebhooks(webhookUrl, client);
+      } catch {
+        // Ignore deletion errors for old webhooks
+      }
+      await webhookManager.createWebhooks(webhookUrl, client);
+      await storage.settings.patch('shopify_credentials', {webhooks_active: true, webhook_error: ''});
+
+      return result.addToast(
+        'success',
+        `Connected to Shopify store: ${storeUrl}. Webhooks configured for real-time sync.`
+      );
+    } catch (webhookError: any) {
+      logger.error(`Error setting up webhooks: ${webhookError.message}`);
+      await storage.settings.patch('shopify_credentials', {
+        webhooks_active: false,
+        webhook_error: webhookError.message
+      });
+      return result.addToast(
+        'success',
+        `Connected to Shopify store: ${storeUrl}, but webhook setup failed: ${webhookError.message}`
+      );
+    }
   }
 
   public async onAuthorizationRequest(
@@ -116,7 +147,26 @@ export class Lifecycle extends AppLifecycle {
   }
 
   public async onUninstall(): Promise<LifecycleResult> {
-    // TODO: any logic required to properly uninstall the app
-    return {success: true};
+    try {
+      logger.info('Uninstalling app, cleaning up webhooks...');
+
+      const settings: Record<string, string> = await storage.settings.get('shopify_credentials');
+      if (settings?.store_url && settings?.access_token) {
+        const endpoints = await functions.getEndpoints();
+        const webhookUrl = endpoints['product_webhook'];
+
+        const webhookManager = new ShopifyWebhookManager({
+          storeUrl: settings.store_url,
+          accessToken: settings.access_token
+        });
+        await webhookManager.deleteWebhooks(webhookUrl);
+        await storage.settings.patch('shopify_credentials', {webhooks_active: false});
+      }
+
+      return {success: true};
+    } catch (error: any) {
+      logger.error(`Error during uninstall: ${error.message}`);
+      return {success: true, message: `Warning: Unable to clean up all webhooks: ${error.message}`};
+    }
   }
 }
