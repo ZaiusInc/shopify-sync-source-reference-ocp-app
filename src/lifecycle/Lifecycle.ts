@@ -1,12 +1,14 @@
 import {
   Lifecycle as AppLifecycle,
   AuthorizationGrantResult,
+  jobs,
   LifecycleResult,
   LifecycleSettingsResult,
   logger,
   Request,
   storage, SubmittedFormData
 } from '@zaiusinc/app-sdk';
+import { ShopifyClient } from '../lib/ShopifyClient';
 
 export class Lifecycle extends AppLifecycle {
   public async onInstall(): Promise<LifecycleResult> {
@@ -21,17 +23,62 @@ export class Lifecycle extends AppLifecycle {
   }
 
   public async onSettingsForm(
-    section: string, _action: string, formData: SubmittedFormData
+    section: string, action: string, formData: SubmittedFormData
   ): Promise<LifecycleSettingsResult> {
     const result = new LifecycleSettingsResult();
     try {
-      // TODO: any logic you need to perform when a setup form section is submitted
-      // When you are finished, save the form data to the settings store
+      if (action === 'trigger_full_import') {
+        return this.handleTriggerFullImport(result);
+      }
+
+      if (section === 'shopify_credentials') {
+        return this.handleShopifyCredentials(formData, result);
+      }
+
+      // Default: save form data to settings store
       await storage.settings.put(section, formData);
       return result;
     } catch {
       return result.addToast('danger', 'Sorry, an unexpected error occurred. Please try again in a moment.');
     }
+  }
+
+  private async handleTriggerFullImport(
+    result: LifecycleSettingsResult
+  ): Promise<LifecycleSettingsResult> {
+    // Check credentials exist in storage
+    const settings: Record<string, string> = await storage.settings.get('shopify_credentials');
+    if (!settings.store_url || !settings.access_token) {
+      return result.addToast('danger', 'Please configure your Shopify credentials before running an import.');
+    }
+
+    await jobs.trigger('import_products', {});
+    return result.addToast(
+      'success', 'Full product import has been triggered. You will be notified when it completes.'
+    );
+  }
+
+  private async handleShopifyCredentials(
+    formData: SubmittedFormData, result: LifecycleSettingsResult
+  ): Promise<LifecycleSettingsResult> {
+    const storeUrl = formData.store_url as string;
+    const accessToken = formData.access_token as string;
+
+    if (!storeUrl || !accessToken) {
+      return result.addToast('danger', 'Please provide both a store URL and access token.');
+    }
+
+    // Validate credentials by testing the connection
+    const client = new ShopifyClient({storeUrl, accessToken});
+    const isValid = await client.testCredentials();
+
+    if (!isValid) {
+      return result.addToast('danger', 'Invalid Shopify credentials. Please check your store URL and access token.');
+    }
+
+    // Credentials are valid — save them
+    await storage.settings.put('shopify_credentials', formData);
+    return result.addToast('success', 'Shopify credentials saved and verified successfully.');
   }
 
   public async onAuthorizationRequest(

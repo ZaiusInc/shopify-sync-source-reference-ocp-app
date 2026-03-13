@@ -17,3 +17,8 @@ sources:
   Product:
     description: Shopify Product
     schema: shopify_products
+
+jobs:
+  import_products:
+    entry_point: ImportProducts
+    description: Performs a one-time import of all Shopify products
