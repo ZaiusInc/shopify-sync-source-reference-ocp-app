@@ -1,0 +1,171 @@
+name: shopify_products
+display_name: Shopify Products
+description: Shopify products with variants, images, collections, and options
+fields:
+  - name: shopify_product_id
+    type: string
+    display_name: Product ID
+    description: Shopify product ID
+    primary: true
+  - name: title
+    type: string
+    display_name: Title
+    description: Product title
+  - name: body_html
+    type: string
+    display_name: Description
+    description: Product description in HTML format
+  - name: vendor
+    type: string
+    display_name: Vendor
+    description: Product vendor
+  - name: product_type
+    type: string
+    display_name: Product Type
+    description: Type of product
+  - name: handle
+    type: string
+    display_name: Handle
+    description: Product handle (URL slug)
+  - name: published_at
+    type: string
+    display_name: Published At
+    description: Date when the product was published
+  - name: created_at
+    type: string
+    display_name: Created At
+    description: Date when the product was created
+  - name: updated_at
+    type: string
+    display_name: Updated At
+    description: Date when the product was last updated
+  - name: tags
+    type: "[string]"
+    display_name: Tags
+    description: Product tags
+  - name: status
+    type: string
+    display_name: Status
+    description: Product status (active, archived, draft)
+  - name: variants
+    type: "[variant]"
+    display_name: Variants
+    description: Product variants
+  - name: images
+    type: "[image]"
+    display_name: Images
+    description: Product images
+  - name: collections
+    type: "[collection]"
+    display_name: Collections
+    description: Collections this product belongs to
+  - name: options
+    type: "[option]"
+    display_name: Options
+    description: Product options (size, color, etc.)
+
+custom_types:
+  - name: variant
+    display_name: Variant
+    description: Product variant with pricing and inventory
+    fields:
+      - name: variant_id
+        type: string
+        display_name: Variant ID
+        description: Shopify variant ID
+      - name: title
+        type: string
+        display_name: Title
+        description: Variant title
+      - name: price
+        type: float
+        display_name: Price
+        description: Variant price
+      - name: compare_at_price
+        type: float
+        display_name: Compare At Price
+        description: Original price for sale items
+      - name: sku
+        type: string
+        display_name: SKU
+        description: Stock keeping unit
+      - name: inventory_quantity
+        type: long
+        display_name: Inventory Quantity
+        description: Current inventory level
+      - name: inventory_policy
+        type: string
+        display_name: Inventory Policy
+        description: Whether to allow sales when out of stock
+      - name: barcode
+        type: string
+        display_name: Barcode
+        description: Product barcode or UPC
+      - name: created_at
+        type: string
+        display_name: Created At
+        description: Date when the variant was created
+      - name: updated_at
+        type: string
+        display_name: Updated At
+        description: Date when the variant was last updated
+  - name: image
+    display_name: Image
+    description: Product image
+    fields:
+      - name: image_id
+        type: string
+        display_name: Image ID
+        description: Shopify image ID
+      - name: url
+        type: string
+        display_name: URL
+        description: Image URL
+      - name: width
+        type: long
+        display_name: Width
+        description: Image width in pixels
+      - name: height
+        type: long
+        display_name: Height
+        description: Image height in pixels
+      - name: alt_text
+        type: string
+        display_name: Alt Text
+        description: Image alt text
+      - name: position
+        type: long
+        display_name: Position
+        description: Image sort order
+  - name: collection
+    display_name: Collection
+    description: Product collection
+    fields:
+      - name: collection_id
+        type: string
+        display_name: Collection ID
+        description: Shopify collection ID
+      - name: title
+        type: string
+        display_name: Title
+        description: Collection title
+  - name: option
+    display_name: Option
+    description: Product option (e.g., Size, Color)
+    fields:
+      - name: option_id
+        type: string
+        display_name: Option ID
+        description: Shopify option ID
+      - name: name
+        type: string
+        display_name: Name
+        description: Option name
+      - name: position
+        type: long
+        display_name: Position
+        description: Option sort order
+      - name: values
+        type: "[string]"
+        display_name: Values
+        description: Available option values

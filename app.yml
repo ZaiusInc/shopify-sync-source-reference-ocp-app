@@ -12,3 +12,8 @@ meta:
     - all
 
 runtime: node22
+
+sources:
+  Product:
+    description: Shopify Product
+    schema: shopify_products
