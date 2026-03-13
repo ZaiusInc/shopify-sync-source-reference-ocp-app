@@ -1,30 +1,55 @@
-# Shopify Source Sync Reference App App
+# Shopify Source Sync Reference App
 
-## Getting Started
+A reference OCP app that synchronizes Shopify product catalog data into Optimizely Connect Platform through the Sync Manager. This app accompanies the [Shopify sync source end-to-end guide](https://docs.developers.optimizely.com/optimizely-connect-platform/docs/shopify-sync-source-end-to-end-guide).
 
-Optimizely Connect Platform apps run on node 18 and are packaged using [yarn](https://yarnpkg.com/lang/en/).
+## Features
 
-Ensure node and [yarn](https://yarnpkg.com/lang/en/) are installed,
-then run `yarn` to install dependencies.
+- **Historical import** — A triggered job that imports all Shopify products in batches of 50, with retry logic and progress tracking.
+- **Real-time sync** — A webhook function that receives Shopify product create, update, and delete events.
+- **Webhook management** — Automatic webhook registration on credential save and cleanup on uninstall.
+- **GraphQL API** — Uses Shopify's GraphQL Admin API with a converter to a REST-compatible internal format.
 
-Apps should be written in [TypeScript](https://www.typescriptlang.org/).
-[Visual Studio Code](https://code.visualstudio.com/) is a great free IDE for typescript projects.
+## Project structure
 
-Finally, check out the [documentation](https://docs.developers.optimizely.com/digital-experience-platform/v1.5.0-optimizely-data-platform/docs/optimizely-connect-platform)
+```
+src/
+├── data/ShopifyProducts.ts          — TypeScript interfaces (GraphQL + REST formats)
+├── functions/ProductWebhook.ts      — Webhook handler for real-time product sync
+├── jobs/ImportProducts.ts           — Historical import job (prepare/perform pattern)
+├── lib/
+│   ├── ShopifyClient.ts             — Shopify API client (GraphQL + REST)
+│   ├── ShopifyWebhookManager.ts     — Webhook registration and cleanup
+│   ├── shopifyConverter.ts          — GraphQL-to-REST format converter
+│   └── transformProductToPayload.ts — Product-to-OCP payload transformer
+├── lifecycle/Lifecycle.ts           — Credential validation, webhook setup, import trigger
+└── sources/schema/shopify_products.yml — Source schema with nested types
+```
+
+## Getting started
+
+Ensure [Node.js](https://nodejs.org/) (v22+) and [yarn](https://yarnpkg.com/) are installed, then:
+
+```bash
+yarn install
+```
 
 ## Build and test
 
-You can use any test framework you like, but Jest comes pre-installed with an Optimizely Connect Platform app.
-To run your unit tests, just run:
-```
-yarn test
-```
-
-Before you upload an app to Optimizely Connect Platform, you can validate your app package to ensure it's ready for upload.
-```
-yarn validate
+```bash
+yarn build    # Compile TypeScript and copy assets to dist/
+yarn test     # Run unit tests with Vitest
+yarn validate # Build + lint + test
 ```
 
-## Optimizely Connect Platform CLI
+## Deploy to OCP
 
-After customizing your app, use the Optimizely Connect Platform CLI to register, upload, and publish your app.
+```bash
+ocp app prepare --publish                              # Publish a dev version
+ocp directory install ocp_sync_source_reference_app@1.0.0-dev.1 <TRACKER_ID>  # Install to sandbox
+```
+
+See the [end-to-end guide](https://docs.developers.optimizely.com/optimizely-connect-platform/docs/shopify-sync-source-end-to-end-guide) for full instructions.
+
+## OCP CLI
+
+After customizing your app, use the [Optimizely Connect Platform CLI](https://docs.developers.optimizely.com/optimizely-connect-platform/docs/ocp-get-started-development-environment) to register, upload, and publish your app.
