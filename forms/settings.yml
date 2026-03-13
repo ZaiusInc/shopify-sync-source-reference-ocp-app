@@ -1,6 +1,75 @@
 sections:
-  - key: instructions
-    label: Instructions
+  - key: shopify_credentials
+    label: Shopify Credentials
+    properties:
+      - webhooks_active
+      - webhook_error
     elements:
-    - type: instructions
-      text: Design your settings form in this file. See the [forms documentation](https://docs.developers.optimizely.com/digital-experience-platform/v1.5.0-optimizely-data-platform/docs/forms#settingsyml) for details.
+      - key: store_url
+        type: text
+        label: Shopify Store URL
+        required: true
+        help: Enter your Shopify store URL (without https://)
+      - key: access_token
+        type: secret
+        label: Access Token
+        required: true
+        help: Permanent access token from your private app
+      - type: instructions
+        text: |
+          **Webhook status: Active** — Real-time product sync is enabled.
+        visible:
+          key: shopify_credentials.webhooks_active
+          equals: true
+      - type: instructions
+        text: |
+          **Webhook status: Not configured** — Save valid credentials to enable real-time product sync.
+        visible:
+          operation: all
+          comparators:
+            - key: shopify_credentials.webhooks_active
+              equals: false
+            - key: shopify_credentials.webhook_error
+              empty: true
+      - type: instructions
+        text: |
+          **Webhook status: Failed** — {{{shopify_credentials.webhook_error}}}
+        visible:
+          operation: all
+          comparators:
+            - key: shopify_credentials.webhooks_active
+              equals: false
+            - key: shopify_credentials.webhook_error
+              empty: false
+
+  - key: sync_options
+    label: Sync Options
+    elements:
+      - key: sync_limit
+        type: text
+        dataType: number
+        label: Batch Size
+        required: true
+        help: Number of products fetched per API request during import (max recommended 250)
+      - key: include_archived
+        type: toggle
+        label: Include Archived Products
+        help: If enabled, archived products will also be synced
+      - key: include_drafts
+        type: toggle
+        label: Include Draft Products
+        help: If enabled, draft products will also be synced
+
+  - key: import_actions
+    label: Import
+    elements:
+      - type: instructions
+        text: |
+          Use the button below to run a full import of all Shopify products.
+          This will sync every product (including variants, images, collections,
+          and options) to all configured data syncs.
+      - key: trigger_full_import
+        type: button
+        label: Run Full Import
+        action: trigger_full_import
+        help: Triggers a full import of all Shopify products to all configured syncs
